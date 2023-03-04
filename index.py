@@ -22,11 +22,17 @@ Toolbox = Constants()
 class Point:
     """"Defines a point in the 2D space of the engine by its mass and starting 2D coordinates"""
 
-    def __init__(self, mass: int, startingposition: list, startingvelocity: list, radius: float):
+    def __init__(self,
+                 mass: int,
+                 startingposition: list,
+                 startingvelocity: list,
+                 radius: float = 0,
+                 color: tuple = (255, 255, 255)):
         self.mass = mass
         self.position = startingposition
         self.velocity = startingvelocity
         self.radius = radius
+        self.color = color
 
 
 def distance(object1: Point, object2: Point):
@@ -55,16 +61,13 @@ def velocitydecomposition(acceleration: float, receiver: Point, actor: Point):
     return acceleration * math.cos(math.atan2(dy, dx)), acceleration * math.sin(math.atan2(dy, dx))
 
 
-P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], 0)
-P2 = Point(5.9724e+24, [0, 0], [0, 0], 6378e+3)
-# print(P1)
-# print(P1.mass)
-# print(distance(P1, P2))
+P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0])
+P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
 
 Points = [
     P1,
     P2
-]  # "Sloppy" but should work somewhat
+]  # "Sloppy" but should work somewhat for now
 
 windowLength, windowWidth = 1000, 1000
 window = pyglet.window.Window(windowLength, windowWidth)
@@ -93,7 +96,7 @@ def on_draw():
             x=(windowLength / 2) + (pA.position[0] / zoomLevel),
             y=(windowWidth / 2) + (pA.position[1] / zoomLevel),
             radius=(pA.radius / zoomLevel) if pA.radius != 0 else 5,
-            color=(255, 255, 255)
+            color=pA.color
         ).draw()
 
 
