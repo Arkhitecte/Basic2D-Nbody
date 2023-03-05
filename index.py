@@ -1,8 +1,7 @@
 import math
 import pyglet
 
-zoomLevel = 20000
-historylength = 10000
+zoomLevel = 5
 
 
 # Main Program for the engine
@@ -14,7 +13,7 @@ class Constants:
     def __init__(self):
         self.SPEED_OF_LIGHT = 2.9979e+8
         self.GRAVITATIONAL_CONSTANT = 6.673e-11
-        self.TIME_STEP = 300  # SECONDS
+        self.TIME_STEP = 1  # SECONDS
 
 
 Toolbox = Constants()
@@ -30,7 +29,7 @@ class Point:
                  radius: float = 0,
                  color: tuple = (255, 255, 255),
                  historysetting=False,
-                 historylength=1000,
+                 historylength=5,
                  historycolor=(204, 0, 204),
                  predictionlength=0,
                  granularity=500
@@ -77,16 +76,25 @@ def velocitydecomposition(acceleration: float, receiver: Point, actor: Point):
 
 def addHistory(point: Point):
     point.history.append(point.position.copy())
-    if len(point.history) > historylength:
+    if len(point.history) > point.historylength:
         point.history.pop(0)
 
 
-P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historysetting=True)
-P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
+# 1000km x 1000km orbit simulation over earth
+# P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historysetting=True, historylength=15, granularity=0)
+# P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
 
+# 3 body system test
+P3 = Point(1.5e+15, [500, 0], [0, 7], historysetting=True, historylength=50, granularity=1, color=(0, 255, 0),
+           historycolor=(50, 255, 50))
+P4 = Point(1.5e+15, [-500, 0], [0, -7], historysetting=True, historylength=50, granularity=1, color=(0, 0, 255),
+           historycolor=(50, 50, 255))
+P5 = Point(5e+13, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=1, color=(255, 0, 0),
+           historycolor=(255, 50, 50))
 Points = [
-    P1,
-    P2
+    P3,
+    P4,
+    P5
 ]  # "Sloppy" but should work somewhat for now
 
 windowLength, windowWidth = 1000, 1000
@@ -139,7 +147,7 @@ def on_draw():
 
     for p in Points:
         if p.granularity == 0:
-            continue
+            addHistory(p)
         elif (j % p.granularity) == 0:
             addHistory(p)
         pyglet.shapes.Circle(
@@ -152,19 +160,19 @@ def on_draw():
             for pos in p.history:
                 if pos == p.history[0]:
                     previous = pos
-                pyglet.shapes.Circle(
-                    x=(windowLength / 2) + (pos[0] / zoomLevel),
-                    y=(windowWidth / 2) + (pos[1] / zoomLevel),
-                    radius=1,
-                    color=(255, 0, 255)
-                ).draw()
+                # pyglet.shapes.Circle(
+                #    x=(windowLength / 2) + (pos[0] / zoomLevel),
+                #    y=(windowWidth / 2) + (pos[1] / zoomLevel),
+                #    radius=1,
+                #    color=(255, 0, 255)
+                # ).draw()
                 pyglet.shapes.Line(
                     x=(windowLength / 2) + (pos[0] / zoomLevel),
                     y=(windowWidth / 2) + (pos[1] / zoomLevel),
                     x2=(windowLength / 2) + (previous[0] / zoomLevel),
                     y2=(windowWidth / 2) + (previous[1] / zoomLevel),
                     width=2,
-                    color=(255, 0, 255)
+                    color=p.historycolor
                 ).draw(),
                 previous = pos
 
