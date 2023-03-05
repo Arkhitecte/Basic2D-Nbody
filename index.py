@@ -2,6 +2,7 @@ import math
 import pyglet
 
 zoomLevel = 20000
+historylength = 10000
 
 
 # Main Program for the engine
@@ -27,12 +28,20 @@ class Point:
                  startingposition: list,
                  startingvelocity: list,
                  radius: float = 0,
-                 color: tuple = (255, 255, 255)):
+                 color: tuple = (255, 255, 255),
+                 historySetting=False,
+                 historylength=1000,
+                 historyColor=(204, 0, 204)
+                 ):
         self.mass = mass
         self.position = startingposition
         self.velocity = startingvelocity
         self.radius = radius
         self.color = color
+        self.history = []
+        self.historysetting = historySetting
+        self.historylength = historylength
+        self.historycolor = historyColor
 
 
 def distance(object1: Point, object2: Point):
@@ -61,7 +70,13 @@ def velocitydecomposition(acceleration: float, receiver: Point, actor: Point):
     return acceleration * math.cos(math.atan2(dy, dx)), acceleration * math.sin(math.atan2(dy, dx))
 
 
-P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0])
+def addHistory(point: Point):
+    point.history.append(point.position.copy())
+    if len(point.history) > historylength:
+        point.history.pop(0)
+
+
+P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historySetting=True)
 P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
 
 Points = [
@@ -73,9 +88,7 @@ windowLength, windowWidth = 1000, 1000
 window = pyglet.window.Window(windowLength, windowWidth)
 
 
-@window.event
-def on_draw():
-    window.clear()
+def simulate():
     for pA in Points:
         for pB in Points:
             if pA == pB:
@@ -92,12 +105,30 @@ def on_draw():
             pA.velocity[1] += deltaVel[1]
             pA.position[0] += pA.velocity[0]
             pA.position[1] += pA.velocity[1]
+
+
+@window.event
+def on_draw():
+    window.clear()
+    for i in range(Toolbox.TIME_STEP):
+        simulate()
+    for p in Points:
         pyglet.shapes.Circle(
-            x=(windowLength / 2) + (pA.position[0] / zoomLevel),
-            y=(windowWidth / 2) + (pA.position[1] / zoomLevel),
-            radius=(pA.radius / zoomLevel) if pA.radius != 0 else 5,
-            color=pA.color
+            x=(windowLength / 2) + (p.position[0] / zoomLevel),
+            y=(windowWidth / 2) + (p.position[1] / zoomLevel),
+            radius=(p.radius / zoomLevel) if p.radius != 0 else 5,
+            color=p.color
         ).draw()
+        if p.historysetting:
+            for pos in p.history:
+                print(p.history.count(pos))
+                pyglet.shapes.Circle(
+                    x=(windowLength / 2) + (pos[0] / zoomLevel),
+                    y=(windowWidth / 2) + (pos[1] / zoomLevel),
+                    radius=1,
+                    color=(255, 0, 255)
+                ).draw()
+        addHistory(p)
 
 
 pyglet.app.run()
