@@ -14,7 +14,7 @@ class Constants:
     def __init__(self):
         self.SPEED_OF_LIGHT = 2.9979e+8
         self.GRAVITATIONAL_CONSTANT = 6.673e-11
-        self.TIME_STEP = 5  # SECONDS
+        self.TIME_STEP = 300  # SECONDS
 
 
 Toolbox = Constants()
@@ -29,9 +29,11 @@ class Point:
                  startingvelocity: list,
                  radius: float = 0,
                  color: tuple = (255, 255, 255),
-                 historySetting=False,
+                 historysetting=False,
                  historylength=1000,
-                 historyColor=(204, 0, 204)
+                 historycolor=(204, 0, 204),
+                 predictionlength=0,
+                 granularity=500
                  ):
         self.mass = mass
         self.position = startingposition
@@ -39,9 +41,12 @@ class Point:
         self.radius = radius
         self.color = color
         self.history = []
-        self.historysetting = historySetting
+        self.historysetting = historysetting
         self.historylength = historylength
-        self.historycolor = historyColor
+        self.historycolor = historycolor
+        self.predictionlength = predictionlength
+        self.predictionhistory = [],
+        self.granularity = round(granularity / Toolbox.TIME_STEP) if round(granularity / Toolbox.TIME_STEP) != 0 else 1
 
 
 def distance(object1: Point, object2: Point):
@@ -76,7 +81,7 @@ def addHistory(point: Point):
         point.history.pop(0)
 
 
-P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historySetting=True)
+P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historysetting=True)
 P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
 
 Points = [
@@ -88,31 +93,55 @@ windowLength, windowWidth = 1000, 1000
 window = pyglet.window.Window(windowLength, windowWidth)
 
 
-def simulate():
-    for pA in Points:
-        for pB in Points:
-            if pA == pB:
-                continue
-            deltaVel = velocitydecomposition(
-                accel(
-                    pA,
-                    gravitationalacceleration(pA, pB)
-                ),
+def simulate(pA, pB):
+    deltaVel = velocitydecomposition(
+        accel(
+            pA,
+            gravitationalacceleration(
                 pA,
-                pB
-            )
-            pA.velocity[0] += deltaVel[0]
-            pA.velocity[1] += deltaVel[1]
-            pA.position[0] += pA.velocity[0]
-            pA.position[1] += pA.velocity[1]
+                pB)
+        ),
+        pA,
+        pB)
+    pA.velocity[0] += deltaVel[0]
+    pA.velocity[1] += deltaVel[1]
+    pA.position[0] += pA.velocity[0]
+    pA.position[1] += pA.velocity[1]
+
+
+def predictionuupdate(point: Point):
+    i = 0
+    while i > len(point.predictionhistory):
+        for pA in Points:
+            for pB in Points:
+                if pA == pB or pA.predictionlength == 0:
+                    continue
+                pAcopy = pA
+                pBcopy = pB
+                # simulate(pAcopy, pBcopy)
+
+
+j = 0
 
 
 @window.event
 def on_draw():
+    global j
+    j += 1
     window.clear()
+
     for i in range(Toolbox.TIME_STEP):
-        simulate()
+        for pA in Points:
+            for pB in Points:
+                if pA == pB:
+                    continue
+                simulate(pA, pB)
+
     for p in Points:
+        if p.granularity == 0:
+            continue
+        elif (j % p.granularity) == 0:
+            addHistory(p)
         pyglet.shapes.Circle(
             x=(windowLength / 2) + (p.position[0] / zoomLevel),
             y=(windowWidth / 2) + (p.position[1] / zoomLevel),
@@ -121,14 +150,23 @@ def on_draw():
         ).draw()
         if p.historysetting:
             for pos in p.history:
-                print(p.history.count(pos))
+                if pos == p.history[0]:
+                    previous = pos
                 pyglet.shapes.Circle(
                     x=(windowLength / 2) + (pos[0] / zoomLevel),
                     y=(windowWidth / 2) + (pos[1] / zoomLevel),
                     radius=1,
                     color=(255, 0, 255)
                 ).draw()
-        addHistory(p)
+                pyglet.shapes.Line(
+                    x=(windowLength / 2) + (pos[0] / zoomLevel),
+                    y=(windowWidth / 2) + (pos[1] / zoomLevel),
+                    x2=(windowLength / 2) + (previous[0] / zoomLevel),
+                    y2=(windowWidth / 2) + (previous[1] / zoomLevel),
+                    width=2,
+                    color=(255, 0, 255)
+                ).draw(),
+                previous = pos
 
 
 pyglet.app.run()
