@@ -43,8 +43,6 @@ class Point:
         self.historysetting = historysetting
         self.historylength = historylength
         self.historycolor = historycolor
-        self.predictionlength = predictionlength
-        self.predictionhistory = [],
         self.granularity = round(granularity / Toolbox.TIME_STEP) if round(granularity / Toolbox.TIME_STEP) != 0 else 1
 
 
@@ -85,16 +83,21 @@ def addHistory(point: Point):
 # P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
 
 # 3 body system test
-P3 = Point(1.5e+15, [500, 0], [0, 7], historysetting=False, historylength=0, granularity=1, color=(0, 255, 0),
+P3 = Point(1.5e+15, [500, 0], [0, -15], historysetting=False, historylength=50, granularity=1, color=(0, 255, 0),
            historycolor=(50, 255, 50))
-P4 = Point(1.5e+15, [-500, 0], [0, -7], historysetting=False, historylength=50, granularity=1, color=(0, 0, 255),
+P4 = Point(1.5e+15, [-500, 0], [0, 15], historysetting=False, historylength=50, granularity=1, color=(0, 0, 255),
            historycolor=(50, 50, 255))
-P5 = Point(5, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=0, color=(255, 0, 0),
+# P5 = Point(5, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=0, color=(255, 0, 0),
+#           historycolor=(255, 50, 50))
+P5 = Point(1.5e+15, [0, 500], [15, 0], color=(255, 0, 0), historysetting=False, historylength=50, granularity=1,
            historycolor=(255, 50, 50))
-Points = [
-    P4,
+P6 = Point(1.5e+15, [0, -500], [-15, 0], color=(255, 0, 255), historysetting=False, historylength=50, granularity=1,
+           historycolor=(255, 50, 255))
+Points = [  # this changes based on the order of the points lmao.
     P3,
-    P5
+    P4,
+    P5,
+    P6
 ]  # "Sloppy" but should work somewhat for now
 
 windowLength, windowWidth = 1000, 1000
@@ -151,7 +154,6 @@ def on_draw():
             p.velocity[1] += allforces[i][1]
             p.position[0] += p.velocity[0]
             p.position[1] += p.velocity[1]
-            print(i, allforces[i], p.color)
             i += 1
     for p in Points:
         if p.granularity == 0:
