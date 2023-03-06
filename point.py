@@ -10,7 +10,7 @@ class Point:
                  historysetting=False,
                  historylength=50,
                  historycolor=(204, 0, 204),
-                 granularity=500,
+                 granularity=5,
                  ):
         from config import timeStep
         self.mass = mass
@@ -22,4 +22,4 @@ class Point:
         self.historysetting = historysetting
         self.historylength = historylength
         self.historycolor = historycolor
-        self.granularity = round(granularity / timeStep) if round(granularity / timeStep) != 0 else 1
+        self.historyprecision = round(granularity / timeStep) if round(granularity / timeStep) != 0 else 1

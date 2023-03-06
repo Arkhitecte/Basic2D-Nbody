@@ -81,7 +81,7 @@ def sum_of_forces(forces):
 # Points = [
 #    P1, P2
 # ]
-# zoomLevel = 25000
+# dezoomLevel = 25000
 
 # 3 body system test
 # P3 = Point(1.5e+15, [500, 0], [0, -15], historysetting=False, historylength=50, granularity=1, color=(0, 255, 0),
@@ -100,9 +100,8 @@ def sum_of_forces(forces):
 #    P4,
 #    P3
 # ]
-# zoomLevel = 10
+# dezoomLevel = 10
 #
-windowLength, windowWidth = 1000, 1000
 window = pyglet.window.Window(windowLength, windowWidth)
 
 j = 0
@@ -132,14 +131,14 @@ def on_draw():
             p.position[1] += p.velocity[1]
             i += 1
     for p in Points:
-        if p.granularity == 0:
+        if p.historyprecision == 0:
             add_to_history(p)
-        elif (j % p.granularity) == 0:
+        elif (j % p.historyprecision) == 0:
             add_to_history(p)
         pyglet.shapes.Circle(
-            x=(windowLength / 2) + (p.position[0] / zoomLevel),
-            y=(windowWidth / 2) + (p.position[1] / zoomLevel),
-            radius=(p.radius / zoomLevel) if p.radius != 0 else 5,
+            x=(windowLength / 2) + (p.position[0] / dezoomLevel),
+            y=(windowWidth / 2) + (p.position[1] / dezoomLevel),
+            radius=(p.radius / dezoomLevel) if p.radius != 0 else 5,
             color=p.color
         ).draw()
         if p.historysetting:
@@ -148,16 +147,16 @@ def on_draw():
                 if pos == p.history[0]:
                     previous = pos
                 # pyglet.shapes.Circle(
-                #    x=(windowLength / 2) + (pos[0] / zoomLevel),
-                #    y=(windowWidth / 2) + (pos[1] / zoomLevel),
+                #    x=(windowLength / 2) + (pos[0] / dezoomLevel),
+                #    y=(windowWidth / 2) + (pos[1] / dezoomLevel),
                 #    radius=1,
                 #    color=(255, 0, 255)
                 # ).draw()
                 pyglet.shapes.Line(
-                    x=(windowLength / 2) + (pos[0] / zoomLevel),
-                    y=(windowWidth / 2) + (pos[1] / zoomLevel),
-                    x2=(windowLength / 2) + (previous[0] / zoomLevel),
-                    y2=(windowWidth / 2) + (previous[1] / zoomLevel),
+                    x=(windowLength / 2) + (pos[0] / dezoomLevel),
+                    y=(windowWidth / 2) + (pos[1] / dezoomLevel),
+                    x2=(windowLength / 2) + (previous[0] / dezoomLevel),
+                    y2=(windowWidth / 2) + (previous[1] / dezoomLevel),
                     width=2,
                     color=p.historycolor
                 ).draw(),
