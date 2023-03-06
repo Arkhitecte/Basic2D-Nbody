@@ -13,7 +13,7 @@ class Constants:
     def __init__(self):
         self.SPEED_OF_LIGHT = 2.9979e+8
         self.GRAVITATIONAL_CONSTANT = 6.673e-11
-        self.TIME_STEP = 1  # SECONDS
+        self.TIME_STEP = 5  # SECONDS
 
 
 Toolbox = Constants()
@@ -85,11 +85,11 @@ def addHistory(point: Point):
 # P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
 
 # 3 body system test
-P3 = Point(1.5e+15, [500, 0], [0, 7], historysetting=True, historylength=50, granularity=1, color=(0, 255, 0),
+P3 = Point(1.5e+15, [500, 0], [0, 7], historysetting=False, historylength=0, granularity=1, color=(0, 255, 0),
            historycolor=(50, 255, 50))
-P4 = Point(1.5e+15, [-500, 0], [0, -7], historysetting=True, historylength=50, granularity=1, color=(0, 0, 255),
+P4 = Point(1.5e+15, [-500, 0], [0, -7], historysetting=False, historylength=50, granularity=1, color=(0, 0, 255),
            historycolor=(50, 50, 255))
-P5 = Point(5e+13, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=1, color=(255, 0, 0),
+P5 = Point(5, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=0, color=(255, 0, 0),
            historycolor=(255, 50, 50))
 Points = [
     P4,
@@ -136,6 +136,7 @@ def on_draw():
     window.clear()
 
     for i in range(Toolbox.TIME_STEP):
+        allforces = []
         for pA in Points:
             forces = []
             for pB in Points:
@@ -143,11 +144,15 @@ def on_draw():
                     continue
                 forces.append(simulate(pA, pB))
             ftot = sumforces(forces)
-            print(pA.mass, ftot)
-            pA.velocity[0] += ftot[0]
-            pA.velocity[1] += ftot[1]
-            pA.position[0] += pA.velocity[0]
-            pA.position[1] += pA.velocity[1]
+            allforces.append(ftot)
+        i = 0
+        for p in Points:
+            p.velocity[0] += allforces[i][0]
+            p.velocity[1] += allforces[i][1]
+            p.position[0] += p.velocity[0]
+            p.position[1] += p.velocity[1]
+            print(i, allforces[i], p.color)
+            i += 1
     for p in Points:
         if p.granularity == 0:
             addHistory(p)
