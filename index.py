@@ -92,8 +92,8 @@ P4 = Point(1.5e+15, [-500, 0], [0, -7], historysetting=True, historylength=50, g
 P5 = Point(5e+13, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=1, color=(255, 0, 0),
            historycolor=(255, 50, 50))
 Points = [
-    P3,
     P4,
+    P3,
     P5
 ]  # "Sloppy" but should work somewhat for now
 
@@ -111,22 +111,19 @@ def simulate(pA, pB):
         ),
         pA,
         pB)
-    pA.velocity[0] += deltaVel[0]
-    pA.velocity[1] += deltaVel[1]
-    pA.position[0] += pA.velocity[0]
-    pA.position[1] += pA.velocity[1]
+    return deltaVel
 
 
-def predictionuupdate(point: Point):
-    i = 0
-    while i > len(point.predictionhistory):
-        for pA in Points:
-            for pB in Points:
-                if pA == pB or pA.predictionlength == 0:
-                    continue
-                pAcopy = pA
-                pBcopy = pB
-                # simulate(pAcopy, pBcopy)
+def sumforces(forces):
+    x = 0
+    y = 0
+    for force in forces:
+        x += force[0]
+        y += force[1]
+    return [x, y]
+
+
+# add together the forces as one vector instead of applying many different vectors, causing the objects to go for the first in the list
 
 
 j = 0
@@ -140,11 +137,17 @@ def on_draw():
 
     for i in range(Toolbox.TIME_STEP):
         for pA in Points:
+            forces = []
             for pB in Points:
                 if pA == pB:
                     continue
-                simulate(pA, pB)
-
+                forces.append(simulate(pA, pB))
+            ftot = sumforces(forces)
+            print(pA.mass, ftot)
+            pA.velocity[0] += ftot[0]
+            pA.velocity[1] += ftot[1]
+            pA.position[0] += pA.velocity[0]
+            pA.position[1] += pA.velocity[1]
     for p in Points:
         if p.granularity == 0:
             addHistory(p)
