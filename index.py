@@ -1,19 +1,14 @@
 import math
+
 import pyglet
 
-zoomLevel = 5
+zoomLevel = 10
 
 
-# Main Program for the engine
-# Well I hope?
-# Let's just see where this goes ;)
-
-# Constants for all the things and all
 class Constants:
     def __init__(self):
-        self.SPEED_OF_LIGHT = 2.9979e+8
         self.GRAVITATIONAL_CONSTANT = 6.673e-11
-        self.TIME_STEP = 5000  # SECONDS
+        self.TIME_STEP = 100  # SECONDS
 
 
 Toolbox = Constants()
@@ -23,13 +18,13 @@ class Point:
     """"Defines a point in the 2D space of the engine by its mass and starting 2D coordinates"""
 
     def __init__(self,
-                 mass: int,
+                 mass: float,
                  startingposition: list,
                  startingvelocity: list,
                  radius: float = 0,
                  color: tuple = (255, 255, 255),
                  historysetting=False,
-                 historylength=5,
+                 historylength=50,
                  historycolor=(204, 0, 204),
                  granularity=500
                  ):
@@ -52,7 +47,7 @@ def distance(object1: Point, object2: Point):
     return d
 
 
-def gravitationalacceleration(object1: Point, object2: Point):
+def gravitational_acceleration(object1: Point, object2: Point):
     a = object1.mass
     b = object2.mass
     d = distance(object1, object2)
@@ -61,66 +56,40 @@ def gravitationalacceleration(object1: Point, object2: Point):
     return F
 
 
-def accel(object1: Point, force):
+def acceleration_norm(object1: Point, force):
     return force / object1.mass
 
 
-def velocitydecomposition(acceleration: float, receiver: Point, actor: Point):
+def decompose_acceleration(acceleration: float, receiver: Point, actor: Point):
     dx = actor.position[0] - receiver.position[0]
     dy = actor.position[1] - receiver.position[1]
     return acceleration * math.cos(math.atan2(dy, dx)), acceleration * math.sin(math.atan2(dy, dx))
 
 
-def addHistory(point: Point):
+def add_to_history(point: Point):
     point.history.append(point.position.copy())
     if len(point.history) > point.historylength:
         point.history.pop(0)
 
 
-def vectornorm(vector: list):
+def vector_norm(vector: list):
     return math.sqrt((vector[0] ** 2) + (vector[1] ** 2))
 
 
-# 1000km x 1000km orbit simulation over earth
-# P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historysetting=True, historylength=15, granularity=0)
-# P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
-
-# 3 body system test
-P3 = Point(1.5e+15, [500, 0], [0, -15], historysetting=False, historylength=50, granularity=1, color=(0, 255, 0),
-           historycolor=(50, 255, 50))
-P4 = Point(1.5e+15, [-500, 0], [0, 15], historysetting=False, historylength=50, granularity=1, color=(0, 0, 255),
-           historycolor=(50, 50, 255))
-# P5 = Point(5, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=0, color=(255, 0, 0),
-#           historycolor=(255, 50, 50))
-P5 = Point(1.5e+15, [0, 500], [15, 0], color=(255, 0, 0), historysetting=False, historylength=50, granularity=1,
-           historycolor=(255, 50, 50))
-P6 = Point(1.5e+15, [0, -500], [-15, 0], color=(255, 0, 255), historysetting=False, historylength=50, granularity=1,
-           historycolor=(255, 50, 255))
-Points = [  # this changes based on the order of the points lmao.
-    P6,
-    P5,
-    P4,
-    P3
-]  # "Sloppy" but should work somewhat for now
-
-windowLength, windowWidth = 1000, 1000
-window = pyglet.window.Window(windowLength, windowWidth)
-
-
-def simulate(pA, pB):
-    deltaVel = velocitydecomposition(
-        accel(
-            pA,
-            gravitationalacceleration(
-                pA,
-                pB)
+def velocity_change(A: Point, B: Point):
+    deltaVel = decompose_acceleration(
+        acceleration_norm(
+            A,
+            gravitational_acceleration(
+                A,
+                B)
         ),
-        pA,
-        pB)
+        A,
+        B)
     return deltaVel
 
 
-def sumforces(forces):
+def sum_of_forces(forces):
     x = 0
     y = 0
     for force in forces:
@@ -129,8 +98,37 @@ def sumforces(forces):
     return [x, y]
 
 
-# add together the forces as one vector instead of applying many different vectors, causing the objects to go for the first in the list
+Points = []
+#  Uncomment any of the two simulations to try the sim !
+# 1000km x 1000km orbit simulation over earth
+# P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historysetting=True, historylength=65, granularity=8)
+# P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
+# Points = [
+#    P1, P2
+# ]
+# zoomLevel = 25000
 
+# 3 body system test
+# P3 = Point(1.5e+15, [500, 0], [0, -15], historysetting=False, historylength=50, granularity=1, color=(0, 255, 0),
+#           historycolor=(50, 255, 50))
+# P4 = Point(1.5e+15, [-500, 0], [0, 15], historysetting=False, historylength=50, granularity=1, color=(0, 0, 255),
+#           historycolor=(50, 50, 255))
+# P5 = Point(5, [0, 0], [0, 0], historysetting=True, historylength=50, granularity=0, color=(255, 0, 0),
+#           historycolor=(255, 50, 50))
+# P5 = Point(1.5e+15, [0, 500], [15, 0], color=(255, 0, 0), historysetting=False, historylength=50, granularity=1,
+#           historycolor=(255, 50, 50))
+# P6 = Point(1.5e+15, [0, -500], [-15, 0], color=(255, 0, 255), historysetting=False, historylength=50, granularity=1,
+#           historycolor=(255, 50, 255))
+# Points = [
+#    P6,
+#    P5,
+#    P4,
+#    P3
+# ]
+# zoomLevel = 10
+#
+windowLength, windowWidth = 1000, 1000
+window = pyglet.window.Window(windowLength, windowWidth)
 
 j = 0
 
@@ -148,8 +146,8 @@ def on_draw():
             for pB in Points:
                 if pA == pB:
                     continue
-                forces.append(simulate(pA, pB))
-            ftot = sumforces(forces)
+                forces.append(velocity_change(pA, pB))
+            ftot = sum_of_forces(forces)
             allforces.append(ftot)
         i = 0
         for p in Points:
@@ -160,9 +158,9 @@ def on_draw():
             i += 1
     for p in Points:
         if p.granularity == 0:
-            addHistory(p)
+            add_to_history(p)
         elif (j % p.granularity) == 0:
-            addHistory(p)
+            add_to_history(p)
         pyglet.shapes.Circle(
             x=(windowLength / 2) + (p.position[0] / zoomLevel),
             y=(windowWidth / 2) + (p.position[1] / zoomLevel),
@@ -170,6 +168,7 @@ def on_draw():
             color=p.color
         ).draw()
         if p.historysetting:
+            previous = []  # it's here to catch an impossible occurrence since pos IS p.history[0] on first iteration
             for pos in p.history:
                 if pos == p.history[0]:
                     previous = pos
