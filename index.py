@@ -13,7 +13,7 @@ class Constants:
     def __init__(self):
         self.SPEED_OF_LIGHT = 2.9979e+8
         self.GRAVITATIONAL_CONSTANT = 6.673e-11
-        self.TIME_STEP = 5  # SECONDS
+        self.TIME_STEP = 5000  # SECONDS
 
 
 Toolbox = Constants()
@@ -31,7 +31,6 @@ class Point:
                  historysetting=False,
                  historylength=5,
                  historycolor=(204, 0, 204),
-                 predictionlength=0,
                  granularity=500
                  ):
         self.mass = mass
@@ -78,6 +77,10 @@ def addHistory(point: Point):
         point.history.pop(0)
 
 
+def vectornorm(vector: list):
+    return math.sqrt((vector[0] ** 2) + (vector[1] ** 2))
+
+
 # 1000km x 1000km orbit simulation over earth
 # P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historysetting=True, historylength=15, granularity=0)
 # P2 = Point(5.9724e+24, [0, 0], [0, 0], radius=6378e+3, color=(0, 193, 0))
@@ -94,10 +97,10 @@ P5 = Point(1.5e+15, [0, 500], [15, 0], color=(255, 0, 0), historysetting=False, 
 P6 = Point(1.5e+15, [0, -500], [-15, 0], color=(255, 0, 255), historysetting=False, historylength=50, granularity=1,
            historycolor=(255, 50, 255))
 Points = [  # this changes based on the order of the points lmao.
-    P3,
-    P4,
+    P6,
     P5,
-    P6
+    P4,
+    P3
 ]  # "Sloppy" but should work somewhat for now
 
 windowLength, windowWidth = 1000, 1000
@@ -121,8 +124,8 @@ def sumforces(forces):
     x = 0
     y = 0
     for force in forces:
-        x += force[0]
-        y += force[1]
+        x += round(force[0], 8)
+        y += round(force[1], 8)
     return [x, y]
 
 
@@ -150,8 +153,8 @@ def on_draw():
             allforces.append(ftot)
         i = 0
         for p in Points:
-            p.velocity[0] += allforces[i][0]
-            p.velocity[1] += allforces[i][1]
+            p.velocity[0] += round(allforces[i][0], 8)
+            p.velocity[1] += round(allforces[i][1], 8)
             p.position[0] += p.velocity[0]
             p.position[1] += p.velocity[1]
             i += 1
