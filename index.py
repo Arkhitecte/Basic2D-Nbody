@@ -2,42 +2,17 @@ import math
 
 import pyglet
 
-zoomLevel = 10
+from config import *
+
+print(Points)
 
 
 class Constants:
     def __init__(self):
         self.GRAVITATIONAL_CONSTANT = 6.673e-11
-        self.TIME_STEP = 100  # SECONDS
 
 
 Toolbox = Constants()
-
-
-class Point:
-    """"Defines a point in the 2D space of the engine by its mass and starting 2D coordinates"""
-
-    def __init__(self,
-                 mass: float,
-                 startingposition: list,
-                 startingvelocity: list,
-                 radius: float = 0,
-                 color: tuple = (255, 255, 255),
-                 historysetting=False,
-                 historylength=50,
-                 historycolor=(204, 0, 204),
-                 granularity=500
-                 ):
-        self.mass = mass
-        self.position = startingposition
-        self.velocity = startingvelocity
-        self.radius = radius
-        self.color = color
-        self.history = []
-        self.historysetting = historysetting
-        self.historylength = historylength
-        self.historycolor = historycolor
-        self.granularity = round(granularity / Toolbox.TIME_STEP) if round(granularity / Toolbox.TIME_STEP) != 0 else 1
 
 
 def distance(object1: Point, object2: Point):
@@ -98,7 +73,7 @@ def sum_of_forces(forces):
     return [x, y]
 
 
-Points = []
+# Points = []
 #  Uncomment any of the two simulations to try the sim !
 # 1000km x 1000km orbit simulation over earth
 # P1 = Point(1, [0, 1000e+3 + 6371e+3], [7350.20, 0], historysetting=True, historylength=65, granularity=8)
@@ -139,7 +114,7 @@ def on_draw():
     j += 1
     window.clear()
 
-    for i in range(Toolbox.TIME_STEP):
+    for i in range(timeStep):
         allforces = []
         for pA in Points:
             forces = []
